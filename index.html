@@ -437,7 +437,7 @@ function renderKanban(){
         </div>
         ${t.notes?`<div class="task-note">${t.notes}</div>`:''}
         <div class="task-footer">
-          <span class="task-owner"><i class="ti ti-user"></i>${t.owner.replace('Gründer','G.')}</span>
+          <span class="task-owner"><i class="ti ti-user"></i>${Array.isArray(t.owners)?t.owners.map(o=>o.replace('Gründer','G.')).join(', '):(t.owner||'').replace('Gründer','G.')}</span>
           <span class="deadline-tag ${dlClass(t.deadline)}">${fmtD(t.deadline)}</span>
         </div>
       </div>`).join('');
@@ -498,7 +498,7 @@ function taskForm(t){
     <div class="form-row"><label>Spalte</label><select id="f-col">
       ${['backlog','todo','doing','done'].map(c=>`<option value="${c}"${t&&t.col===c?' selected':''}>${c==='backlog'?'Backlog':c==='todo'?'To Do':c==='doing'?'In Arbeit':'Erledigt'}</option>`).join('')}
     </select></div>
-    <div class="form-row"><label>Verantwortlich</label><select id="f-owner">${MEMBERS.map(m=>`<option${t&&t.owner===m?' selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="form-row"><label>Verantwortlich</label><div style="display:flex;flex-direction:column;gap:6px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 12px;" id="f-owners-wrap">       ${MEMBERS.map(m=>{const sel=t&&(Array.isArray(t.owners)?t.owners.includes(m):t.owner===m);return `<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;font-weight:400;text-transform:none;letter-spacing:0"><input type="checkbox" value="${m}" ${sel?'checked':''} style="width:14px;height:14px;accent-color:var(--purple);"> ${m}</label>`;}).join('')}     </div></div>
     <div class="form-row"><label>Deadline</label><input id="f-deadline" type="date" value="${t?t.deadline:'2026-06-30'}"></div>
     <div class="form-row"><label>Priorität</label><select id="f-priority">
       <option value="high"${t&&t.priority==='high'?' selected':''}>Hoch</option>
@@ -589,7 +589,7 @@ function renderTeam(){
   const tArr=Object.values(tasks);
   const initials=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
   document.getElementById('team-grid').innerHTML=MEMBERS.map((m,i)=>{
-    const mt=tArr.filter(t=>t.owner===m&&t.col!=='done');
+    const mt=tArr.filter(t=>(Array.isArray(t.owners)?t.owners.includes(m):t.owner===m)&&t.col!=='done');
     const ac=AVATAR_COLORS[i];
     return `<div class="member-card">
       <div class="avatar" style="background:${ac.bg};color:${ac.fg}">${initials(m)}</div>
